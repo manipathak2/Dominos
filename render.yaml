@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: dominos-clone
+    runtime: python311
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app"
+    envVars:
+      - key: SECRET_KEY
+        scope: run
+        value: dominos-pizza-secret-key-2024
+      - key: DATABASE_URL
+        scope: run
+        value: sqlite:///pizzadb.sqlite3
+      - key: FLASK_ENV
+        scope: run
+        value: production
