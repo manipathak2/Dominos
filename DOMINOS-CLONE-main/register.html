@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Register | Domino's</title>
+    <link rel="stylesheet" href="css/login_styles.css">
+</head>
+
+<body class="login-body">
+
+    <header>
+  <div class="logo">
+    <img src="image/Dominos_logo.1.png" alt="Pizza Logo" />
+    <span ><a href="index.html">Domino's Pizza</a></span>
+  </div>
+  <nav class="menu-nav">
+    <a href="index.html">Home</a>
+    <a href="menu.html">Menu</a>
+    <a href="cart.html" class="cart-icon" data-count="">Cart</a>
+  </nav>
+</header>
+
+    <div class="login-container">
+        <h2>Create Your Account</h2>
+
+        <form id="registerForm" class="login-form" onsubmit="handleRegister(event)">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" required placeholder="Enter your name">
+
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required placeholder="Enter your email">
+
+            <label for="phone">Phone No.</label>
+            <input type="tel" id="phone" name="phone" required placeholder="Enter your phone number">
+
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required placeholder="Enter your password">
+
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="Confirm your password">
+
+            <button type="submit" class="login-btn">Register</button>
+
+            <p class="login-text">Already have an account? <a href="login.html">Login</a></p>
+        </form>
+    </div>
+
+    <script src="js/popup.js"></script>
+    <script>
+      function handleRegister(event) {
+        event.preventDefault();
+        
+        const name = document.getElementById("name").value;
+        const email = document.getElementById("email").value;
+        const phone = document.getElementById("phone").value;
+        const password = document.getElementById("password").value;
+        const confirmPassword = document.getElementById("confirmPassword").value;
+        
+        // Validate password match
+        if (password !== confirmPassword) {
+          showErrorPopup("❌ Passwords do not match!");
+          return;
+        }
+
+        // Check if email already registered
+        const registeredUsers = JSON.parse(localStorage.getItem("registeredUsers")) || [];
+        if (registeredUsers.some(user => user.email === email)) {
+          showErrorPopup("❌ Email already registered! Please login or use a different email.");
+          setTimeout(() => {
+            window.location.href = "login.html";
+          }, 3000);
+          return;
+        }
+
+        // Store user registration
+        const newUser = { name, email, phone, password };
+        registeredUsers.push(newUser);
+        localStorage.setItem("registeredUsers", JSON.stringify(registeredUsers));
+        
+        // Show success message
+        showSuccessPopup("✓ Registration successful! Please login to continue.");
+        
+        // Redirect to login after 2 seconds
+        setTimeout(() => {
+          window.location.href = "login.html";
+        }, 2000);
+      }
+
+      // Check if already logged in
+      window.addEventListener("DOMContentLoaded", () => {
+        if (localStorage.getItem("userLoggedIn") === "true") {
+          window.location.href = "menu.html";
+        }
+      });
+    </script>
+
+</body>
+
+</html>

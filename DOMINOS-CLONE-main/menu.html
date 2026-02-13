@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Menu</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="css/menu_styles.css" />
+</head>
+<body>
+    <header>
+  <div class="logo">
+    <img src="image/Dominos_logo.1.png" alt="Pizza Logo" />
+   <span ><a href="index.html">Domino's Pizza</a></span>
+  </div>
+  <nav class="menu-nav">
+    <a href="index.html">Home</a>
+    <a href="menu.html">Menu</a>
+    <a href="cart.html" class="cart-icon" data-count="0">Cart</a>
+    <div id="user-display">
+      <a href="login.html">Login</a>
+    </div>
+  </nav>
+</header>
+
+ <div class="pizza-container">
+  <div class="pizza-card">
+   <div class="pizza-image-wrapper">
+      <img src="image/margherita.jpg" alt="Margherita Pizza">
+      <img src="image/Veg_symbol.jpg" alt="Veg" class="veg-symbol" id="veg-symbol">
+    </div>
+    <h3>Margherita</h3>
+    <p>Classic delight with 100% real mozzarella cheese</p>
+    <p><strong>₹199</strong></p>
+    <button onclick="addToCart('Margherita', 199)">Add to Cart</button>
+  </div>
+
+  <div class="pizza-card">
+    <div class="pizza-image-wrapper">
+      <img src="image/farmhouse.jpg" alt="Farmhouse Pizza">
+      <img src="image/Veg_symbol.jpg" alt="Veg" class="veg-symbol" id="veg-symbol">
+    </div>
+    <h3>Farmhouse</h3>
+    <p>Delightful combination of onion, capsicum, tomato & mushroom</p>
+    <p><strong>₹299</strong></p>
+    <button onclick="addToCart('Farmhouse', 299)">Add to Cart</button>
+  </div>
+
+  <div class="pizza-card">
+    <div class="pizza-image-wrapper">
+    <img src="image/peppy-paneer.jpg" alt="Peppy Paneer Pizza">
+    <img src="image/Veg_symbol.jpg" alt="Veg" class="veg-symbol" id="veg-symbol">
+    </div>
+    <h3>Peppy Paneer</h3>
+    <p>Flavorful trio of juicy paneer, crisp capsicum with spicy red paprika</p>
+    <p><strong>₹329</strong></p>
+    <button onclick="addToCart('Peppy Paneer', 329)">Add to Cart</button>
+  </div>
+  
+  <!-- Add more pizza cards here -->
+
+<div class="pizza-card">
+  <div class="pizza-image-wrapper">
+  <img src="image/Capsicum & Red Paprika.jpg" alt="Capsicum & Red Paprika">
+  <img src="image/Veg_symbol.jpg" alt="Veg" class="veg-symbol" id="veg-symbol">
+  </div>
+  <h3>Capsicum & Red Paprika with Videshi Hot Sauce </h3>
+  <p>Veggies galore with onion, capsicum, mushroom, corn, and paneer</p>
+  <p><strong>₹349</strong></p>
+  <button onclick="addToCart('Capsicum & Red Paprika', 349)">Add to Cart</button>
+</div>
+
+<div class="pizza-card">
+  <div class="pizza-image-wrapper">
+  <img src="image/vegie-paradise.jpg" alt="vegie-paradise Pizza">
+  <img src="image/Veg_symbol.jpg" alt="Veg" class="veg-symbol" id="veg-symbol">
+</div>
+  <h3>Veggie-paradise</h3>
+  <p>Loaded with golden corn, crisp capsicum, juicy tomato & jalapeno</p>
+  <p><strong>₹279</strong></p>
+  <button onclick="addToCart('Veggie-paradise', 279)">Add to Cart</button>
+</div>
+
+<div class="pizza-card">
+  <div class="pizza-image-wrapper">
+  <img src="image/cheese_n_corn.jpg" alt="Cheese n Corn Pizza">
+  <img src="image/Veg_symbol.jpg" alt="Veg" class="veg-symbol" id="veg-symbol">
+  </div>
+  <h3>Cheese n Corn</h3>
+  <p>A classic combo of golden corn and extra cheese</p>
+  <p><strong>₹249</strong></p>
+  <button onclick="addToCart('Cheese n Corn', 249)">Add to Cart</button>
+</div>
+
+<div class="pizza-card">
+  <div class="pizza-image-wrapper">
+  <img src="image/extravaganza.jpg" alt="extravaganza Pizza">
+  <img src="image/Veg_symbol.jpg" alt="Veg" class="veg-symbol" id="veg-symbol">
+  </div>
+  <h3>Veg Extravaganza</h3>
+  <p>Black olives, capsicum, onion, grilled mushroom, corn, tomato, jalapeno & extra cheese.</p>
+  <p><strong>₹219</strong></p>
+  <button onclick="addToCart('Veg Extravaganza', 219)">Add to Cart</button>
+</div>
+
+<div class="pizza-card">
+  <div class="pizza-image-wrapper">
+  <img src="image/Veg BBQ.jpg" alt="Veg Barbeque Pizza">
+  <img src="image/Veg_symbol.jpg" alt="Veg" class="veg-symbol" id="veg-symbol">
+  </div>
+  <h3>Veg Barbeque </h3>
+  <p>Barbeque Veggie's with a smoky twist on mozzarella base</p>
+  <p><strong>₹239</strong></p>
+  <button onclick="addToCart('Veg Barbeque Pizza',239)">Add to Cart</button>
+</div>
+</div>
+  
+
+  <script src="js/popup.js"></script>
+  <script src="js/script.js"></script>
+ 
+
+</body>
+</html>
