@@ -2,6 +2,11 @@ from flask import Flask, request, jsonify, session, render_template
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 import os
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__, static_folder='', template_folder='')
 app.secret_key = os.environ.get('SECRET_KEY', 'dominos-pizza-secret-key-2024')
@@ -29,48 +34,63 @@ class MenuItem(db.Model):
     name = db.Column(db.String(100), nullable=False)
     price = db.Column(db.Float, nullable=False)
 
+# Helper function to read HTML files with error handling
+def read_html(filename):
+    try:
+        base_path = os.path.dirname(__file__)
+        file_path = os.path.join(base_path, filename)
+        logger.debug(f"Reading file: {file_path}")
+        with open(file_path, 'r', encoding='utf-8') as f:
+            return f.read(), 200, {'Content-Type': 'text/html'}
+    except FileNotFoundError as e:
+        logger.error(f"File not found: {filename} - {e}")
+        return f"<h1>404 - {filename} not found</h1>", 404, {'Content-Type': 'text/html'}
+    except Exception as e:
+        logger.error(f"Error reading {filename}: {e}")
+        return f"<h1>500 - Error reading {filename}</h1>", 500, {'Content-Type': 'text/html'}
+
 # Routes to serve HTML pages
 @app.route("/")
 def index():
-    with open(os.path.join(os.path.dirname(__file__), 'index.html')) as f:
-        return f.read(), 200, {'Content-Type': 'text/html'}
+    return read_html('index.html')
 
 @app.route("/login")
 def login_page():
-    with open(os.path.join(os.path.dirname(__file__), 'login.html')) as f:
-        return f.read(), 200, {'Content-Type': 'text/html'}
+    return read_html('login.html')
 
 @app.route("/register")
 def register_page():
-    with open(os.path.join(os.path.dirname(__file__), 'register.html')) as f:
-        return f.read(), 200, {'Content-Type': 'text/html'}
+    return read_html('register.html')
 
 @app.route("/menu")
 def menu_page():
-    with open(os.path.join(os.path.dirname(__file__), 'menu.html')) as f:
-        return f.read(), 200, {'Content-Type': 'text/html'}
+    return read_html('menu.html')
 
 @app.route("/cart")
 def cart_page():
-    with open(os.path.join(os.path.dirname(__file__), 'cart.html')) as f:
-        return f.read(), 200, {'Content-Type': 'text/html'}
+    return read_html('cart.html')
 
-# Initialize DB with sample data
-with app.app_context():
-    db.create_all()
-    if MenuItem.query.count() == 0:
-        sample_menu = [
-            MenuItem(name="Margherita", price=199),
-            MenuItem(name="Farmhouse", price=299),
-            MenuItem(name="Peppy Paneer", price=329),
-            MenuItem(name="Cheese n Corn", price=249),
-            MenuItem(name="Veggie Paradise", price=279),
-            MenuItem(name="Capsicum & Red Paprika", price=89),
-            MenuItem(name="extravaganza", price=219),
-            MenuItem(name="Veg Barbeque ", price=239)
-        ]
-        db.session.add_all(sample_menu)
-        db.session.commit()
+# Initialize DB with sample data (only run once)
+def init_db():
+    try:
+        with app.app_context():
+            db.create_all()
+            if MenuItem.query.count() == 0:
+                sample_menu = [
+                    MenuItem(name="Margherita", price=199),
+                    MenuItem(name="Farmhouse", price=299),
+                    MenuItem(name="Peppy Paneer", price=329),
+                    MenuItem(name="Cheese n Corn", price=249),
+                    MenuItem(name="Veggie Paradise", price=279),
+                    MenuItem(name="Capsicum & Red Paprika", price=89),
+                    MenuItem(name="extravaganza", price=219),
+                    MenuItem(name="Veg Barbeque ", price=239)
+                ]
+                db.session.add_all(sample_menu)
+                db.session.commit()
+                logger.info("Database initialized with sample data")
+    except Exception as e:
+        logger.error(f"Database initialization error: {e}")
 
 @app.route("/api/register", methods=["POST"])
 def register():
@@ -126,7 +146,8 @@ def cart():
         return jsonify({"message": "Cart cleared"})
 
 @app.route("/api/checkout", methods=["POST"])
-def checkout():
+def init_db()
+    checkout():
     session['cart'] = []
     return jsonify({"message": "Order placed successfully"})
 
