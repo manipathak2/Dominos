@@ -1,33 +1,66 @@
-from flask import Flask, request, jsonify, session, render_template
+from flask import Flask, request, jsonify, session
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
 import os
+import sqlite3
 
 app = Flask(__name__, static_folder='', template_folder='')
 app.secret_key = os.environ.get('SECRET_KEY', 'dominos-pizza-secret-key-2024')
 CORS(app, supports_credentials=True)
 
-# Database setup
-db_path = os.environ.get('DATABASE_URL', 'sqlite:///pizzadb.sqlite3')
-if db_path.startswith('sqlite'):
-    app.config['SQLALCHEMY_DATABASE_URI'] = db_path
+DATABASE_URL = os.environ.get('DATABASE_URL', 'sqlite:///pizzadb.sqlite3')
+if DATABASE_URL.startswith('sqlite:///'):
+    DB_FILE = DATABASE_URL.replace('sqlite:///', '', 1)
 else:
-    # For PostgreSQL or other databases
-    app.config['SQLALCHEMY_DATABASE_URI'] = db_path
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    raise RuntimeError('Unsupported DATABASE_URL. Only sqlite:/// is supported in this deployment.')
 
-db = SQLAlchemy(app)
 
-# Database Models
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    password = db.Column(db.String(100), nullable=False)
+def get_db_connection():
+    conn = sqlite3.connect(DB_FILE, check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    return conn
 
-class MenuItem(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    price = db.Column(db.Float, nullable=False)
+
+def init_db():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL
+        )
+        """
+    )
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS menu_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            price REAL NOT NULL
+        )
+        """
+    )
+    conn.commit()
+
+    count = cur.execute('SELECT COUNT(*) FROM menu_items').fetchone()[0]
+    if count == 0:
+        sample_menu = [
+            ("Margherita", 199),
+            ("Farmhouse", 299),
+            ("Peppy Paneer", 329),
+            ("Cheese n Corn", 249),
+            ("Veggie Paradise", 279),
+            ("Capsicum & Red Paprika", 89),
+            ("extravaganza", 219),
+            ("Veg Barbeque ", 239),
+        ]
+        cur.executemany('INSERT INTO menu_items (name, price) VALUES (?, ?)', sample_menu)
+        conn.commit()
+    conn.close()
+
+
+init_db()
 
 # Routes to serve HTML pages
 @app.route("/")
@@ -55,39 +88,37 @@ def cart_page():
     with open(os.path.join(os.path.dirname(__file__), 'cart.html')) as f:
         return f.read(), 200, {'Content-Type': 'text/html'}
 
-# Initialize DB with sample data
-with app.app_context():
-    db.create_all()
-    if MenuItem.query.count() == 0:
-        sample_menu = [
-            MenuItem(name="Margherita", price=199),
-            MenuItem(name="Farmhouse", price=299),
-            MenuItem(name="Peppy Paneer", price=329),
-            MenuItem(name="Cheese n Corn", price=249),
-            MenuItem(name="Veggie Paradise", price=279),
-            MenuItem(name="Capsicum & Red Paprika", price=89),
-            MenuItem(name="extravaganza", price=219),
-            MenuItem(name="Veg Barbeque ", price=239)
-        ]
-        db.session.add_all(sample_menu)
-        db.session.commit()
-
 @app.route("/api/register", methods=["POST"])
 def register():
     data = request.get_json()
-    if User.query.filter_by(username=data['username']).first():
+    username = data['username']
+    password = data['password']
+    conn = get_db_connection()
+    cur = conn.cursor()
+    existing = cur.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone()
+    if existing:
+        conn.close()
         return jsonify({"message": "Username already exists"}), 409
-    new_user = User(username=data['username'], password=data['password'])
-    db.session.add(new_user)
-    db.session.commit()
+
+    cur.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, password))
+    conn.commit()
+    conn.close()
     return jsonify({"message": "Registration successful"}), 201
 
 @app.route("/api/login", methods=["POST"])
 def login():
     data = request.get_json()
-    user = User.query.filter_by(username=data['username'], password=data['password']).first()
+    username = data['username']
+    password = data['password']
+    conn = get_db_connection()
+    cur = conn.cursor()
+    user = cur.execute(
+        'SELECT id FROM users WHERE username = ? AND password = ?',
+        (username, password)
+    ).fetchone()
+    conn.close()
     if user:
-        session['user_id'] = user.id
+        session['user_id'] = user['id']
         return jsonify({"message": "Login successful"})
     return jsonify({"message": "Invalid credentials"}), 401
 
@@ -98,8 +129,10 @@ def logout():
 
 @app.route("/api/menu", methods=["GET"])
 def get_menu():
-    items = MenuItem.query.all()
-    return jsonify([{ "id": i.id, "name": i.name, "price": i.price } for i in items])
+    conn = get_db_connection()
+    items = conn.execute('SELECT id, name, price FROM menu_items').fetchall()
+    conn.close()
+    return jsonify([{"id": item['id'], "name": item['name'], "price": item['price']} for item in items])
 
 @app.route("/api/cart", methods=["GET", "POST", "DELETE"])
 def cart():
